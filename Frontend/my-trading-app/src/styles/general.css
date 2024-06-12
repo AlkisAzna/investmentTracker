@@ -1,0 +1,5 @@
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #0d432a, #2c774f, #3c9d70); /* Full body background gradient */
+}

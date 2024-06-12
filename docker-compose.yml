@@ -1,0 +1,84 @@
+services:
+  # React Web Service
+  react-app:
+    build:
+      context: ./Frontend/my-trading-app
+      dockerfile: Dockerfile
+    depends_on:
+      - django_backend
+    ports:
+      - "3000:3000" 
+    volumes:
+      - ./Frontend/my-trading-app:/usr/src/app
+      - /usr/src/app/node_modules
+      - ./certificates/localhost+2.pem:/usr/src/app/certificates/localhost+2.pem
+      - ./certificates/localhost+2-key.pem:/usr/src/app/certificates/localhost+2-key.pem
+    environment:
+      - HTTPS=true
+      - SSL_CRT_FILE=/usr/src/app/certificates/localhost+2.pem
+      - SSL_KEY_FILE=/usr/src/app/certificates/localhost+2-key.pem
+    networks:
+      - investment_tracker
+
+  # Django Service
+  django_backend:
+    build: 
+      context: .
+      dockerfile: Backend/Dockerfile
+    command: >
+      sh -c "python manage.py wait_for_db &&
+             python manage.py makemigrations &&
+             python manage.py migrate &&
+             python manage.py runsslserver 0.0.0.0:8001 --certificate /usr/src/app/certificates/localhost+2.pem --key /usr/src/app/certificates/localhost+2-key.pem"
+    volumes:
+      - .:/usr/src/app
+      - ./certificates/localhost+2.pem:/usr/src/app/certificates/localhost+2.pem
+      - ./certificates/localhost+2-key.pem:/usr/src/app/certificates/localhost+2-key.pem
+    depends_on:
+      - mysql_db
+    ports:
+      - "8001:8001"
+    environment:
+      - DEBUG=0
+      - DATABASE_URL=mysql://root:password@db:3306/investors_db
+    env_file:
+      - secrets.env
+      - .env
+    networks:
+      - investment_tracker
+
+  # MySQL Database Service
+  mysql_db:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: 'investors_db'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+      - "3307:3306" # To avoid potential conflict with any local MySQL installations
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - investment_tracker
+
+  # PhpMyAdmin for MySQL Database Management
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: mysql_db
+      PMA_USER: 'user'
+      PMA_PASSWORD: 'password'
+    ports:
+      - "8085:80"
+    depends_on:
+      - mysql_db
+    networks:
+      - investment_tracker
+
+networks:
+  investment_tracker:
+    driver: bridge
+
+volumes:
+  mysql_data: {}

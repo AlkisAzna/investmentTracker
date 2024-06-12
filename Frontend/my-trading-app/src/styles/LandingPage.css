@@ -1,0 +1,97 @@
+body {
+  margin: 0;
+  font-size: medium;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #0d432a, #2c774f, #3c9d70); /* Full body background gradient */
+}
+
+.landing-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 50px 0;
+  gap: 20px; /* Space between cards */
+}
+
+.logo-bg {
+  position: absolute;
+  left: 10px;
+  top: 20px; /* Adjust as necessary for your layout */
+  background-color: rgba(14, 177, 22, 0.644);
+  border-radius: 50%;
+  padding: 20px;
+}
+
+.website-logo {
+  height: auto; /* Maintain aspect ratio */
+  width: 200px; /* Adjust based on actual logo size */
+}
+
+.card {
+  background: rgba(15, 146, 10, 0.336);/* Semi-transparent white with less blur */
+  border-radius: 20px;
+  padding: 20px;
+  margin: 1rem;
+  width: calc(50% - 40px); /* Adjust width as necessary */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: none; /* No border for the card */
+}
+
+/* Equal height for cards */
+.login-card, .signup-card {
+  height: 350px; /* Or as needed to make them equal */
+}
+
+.card-title, .card-description {
+  text-align: center;
+}
+
+.input-field {
+  width: 100%;
+  border-radius: 20px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 1rem;
+}
+
+.btn-login, .btn-signup, .btn-dashboard {
+  width: 80%; /* Button width relative to card width */
+  padding: 10px 20px;
+  margin-top: 1rem;
+  border-radius: 20px;
+  border: none;
+  background-color: #00b712; /* Adjust the color to match your design */
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-login:hover, .btn-signup:hover, .btn-dashboard:hover {
+  background-color: white; /* Color on hover */
+  color: #00b712;
+}
+
+@media (max-width: 768px) {
+  .landing-container {
+    flex-direction: column;
+    padding-top: 150px; /* Reduced padding for smaller screens */
+  }
+
+  .card {
+    width: 90%; /* Full width cards on smaller screens */
+    margin-bottom: 20px; /* Add some space between the cards */
+  }
+
+  .btn-login, .btn-signup, .btn-dashboard {
+    width: 100%; /* Full-width buttons on smaller screens */
+  }
+}
