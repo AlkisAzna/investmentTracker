@@ -118,11 +118,11 @@ WSGI_APPLICATION = 'Setup.wsgi.application'
 DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.mysql',
-         'NAME': 'investors_db',
-         'USER': 'user',
-         'PASSWORD': 'password',
-         'HOST': 'mysql_db',  # Use service name defined in docker-compose.yml
-        'PORT': '3306',
+         'NAME': os.environ.get('MYSQL_DATABASE', 'investors_db'),
+         'USER': os.environ.get('MYSQL_USER', 'user'),
+         'PASSWORD': os.environ.get('MYSQL_PASSWORD', ''),
+         'HOST': os.environ.get('MYSQL_HOST', 'mysql_db'),  # Use service name defined in docker-compose.yml
+        'PORT': os.environ.get('MYSQL_PORT', '3306'),
     }
 }
 
@@ -157,7 +157,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-CORS_ORIGIN_ALLOW_ALL = True
+# Security: Only allow specific origins in production
+CORS_ORIGIN_ALLOW_ALL = os.environ.get('CORS_ALLOW_ALL', 'False') == 'True'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
@@ -168,9 +169,13 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ORIGIN_WHITELIST = [
-     'http://localhost:3000'
+CORS_ALLOWED_ORIGINS = [
+     'http://localhost:3000',
+     'https://localhost:3000',
 ]
+
+# Additional CORS settings for security
+CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
      'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -184,4 +189,55 @@ SIMPLE_JWT = {
      'REFRESH_TOKEN_LIFETIME': timedelta(days=5),
      'ROTATE_REFRESH_TOKENS': True,
      'BLACKLIST_AFTER_ROTATION': True
+}
+
+# Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/django.log'),
+            'maxBytes': 1024 * 1024 * 15,  # 15MB
+            'backupCount': 10,
+            'formatter': 'verbose',
+        },
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/django_errors.log'),
+            'maxBytes': 1024 * 1024 * 15,  # 15MB
+            'backupCount': 10,
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'Backend': {
+            'handlers': ['console', 'file', 'error_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
 }

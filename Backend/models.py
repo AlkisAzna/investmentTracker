@@ -26,34 +26,95 @@ class User(AbstractUser):
 
 # Asset Model
 class Asset(models.Model):
+    ASSET_TYPE_CHOICES = [
+        ('stock', 'Stock'),
+        ('crypto', 'Cryptocurrency'),
+        ('etf', 'ETF'),
+    ]
+
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100, blank=True)
-    price = models.DecimalField(max_digits=10, decimal_places=3, blank=True)
-    change = models.DecimalField(max_digits=5, decimal_places=2, blank=True)
-    volume = models.CharField(max_length=50, blank=True)
-    asset_type = models.CharField(max_length=20, blank=True)
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=3)
+    change = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    volume = models.CharField(max_length=50, null=True, blank=True)
+    asset_type = models.CharField(max_length=20, choices=ASSET_TYPE_CHOICES)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['asset_type']),
+            models.Index(fields=['name']),
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.asset_type})"
     
 class UserAsset(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    asset_name = models.CharField(max_length=100, blank=False, default="")
-    quantity = models.DecimalField(max_digits=10, decimal_places=6, blank=False)
-    total_value = models.DecimalField(max_digits=10, decimal_places=3, blank=False)
-    category = models.CharField(max_length=10, blank=False, default="")
+    CATEGORY_CHOICES = [
+        ('stock', 'Stock'),
+        ('crypto', 'Crypto'),
+        ('etf', 'ETF'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assets')
+    asset_name = models.CharField(max_length=100)
+    quantity = models.DecimalField(max_digits=10, decimal_places=6)
+    total_value = models.DecimalField(max_digits=10, decimal_places=3)
+    category = models.CharField(max_length=10, choices=CATEGORY_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['user', 'asset_name']
+        indexes = [
+            models.Index(fields=['user', 'category']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.asset_name} ({self.quantity})"
 
 
 class UserFunds(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='funds')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'User Funds'
+        verbose_name_plural = 'User Funds'
+
+    def __str__(self):
+        return f"{self.user.username} - Balance: ${self.amount}"
 
 class Transaction(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
-    asset_name = models.CharField(max_length=100, blank=False)
-    quantity = models.DecimalField(max_digits=10, decimal_places=6, blank=False)
-    amount = models.DecimalField(max_digits=10, decimal_places=3, blank=False)
-    transaction_type = models.CharField(max_length=10, blank=False, choices=[('buy', 'Buy'), ('sell', 'Sell')])
+    TRANSACTION_TYPE_CHOICES = [
+        ('buy', 'Buy'),
+        ('sell', 'Sell'),
+    ]
+
+    CATEGORY_CHOICES = [
+        ('stock', 'Stock'),
+        ('crypto', 'Crypto'),
+        ('etf', 'ETF'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transactions')
+    asset_name = models.CharField(max_length=100)
+    quantity = models.DecimalField(max_digits=10, decimal_places=6)
+    amount = models.DecimalField(max_digits=10, decimal_places=3)
+    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPE_CHOICES)
     timestamp = models.DateTimeField(auto_now_add=True)
-    category = models.CharField(max_length=10, blank=False, default="")
+    category = models.CharField(max_length=10, choices=CATEGORY_CHOICES)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['user', '-timestamp']),
+            models.Index(fields=['transaction_type']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.transaction_type} {self.quantity} {self.asset_name}"
 
 
 

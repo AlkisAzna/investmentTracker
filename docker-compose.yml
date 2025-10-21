@@ -39,8 +39,8 @@ services:
     ports:
       - "8001:8001"
     environment:
-      - DEBUG=0
-      - DATABASE_URL=mysql://root:password@db:3306/investors_db
+      - DEBUG=${DEBUG:-0}
+      - DATABASE_URL=mysql://${MYSQL_USER:-user}:${MYSQL_PASSWORD}@mysql_db:3306/${MYSQL_DATABASE:-investors_db}
     env_file:
       - secrets.env
       - .env
@@ -51,30 +51,32 @@ services:
   mysql_db:
     image: mysql:latest
     environment:
-      MYSQL_DATABASE: 'investors_db'
-      MYSQL_USER: 'user'
-      MYSQL_PASSWORD: 'password'
-      MYSQL_ROOT_PASSWORD: 'password'
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-investors_db}
+      MYSQL_USER: ${MYSQL_USER:-user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
       - "3307:3306" # To avoid potential conflict with any local MySQL installations
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - investment_tracker
+    restart: unless-stopped
 
   # PhpMyAdmin for MySQL Database Management
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     environment:
       PMA_HOST: mysql_db
-      PMA_USER: 'user'
-      PMA_PASSWORD: 'password'
+      PMA_USER: ${MYSQL_USER:-user}
+      PMA_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "8085:80"
     depends_on:
       - mysql_db
     networks:
       - investment_tracker
+    restart: unless-stopped
 
 networks:
   investment_tracker:

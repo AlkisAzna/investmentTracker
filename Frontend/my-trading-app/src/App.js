@@ -4,6 +4,8 @@ import { Routes, Route } from 'react-router-dom';
 import { ThemeContext } from './header/ThemeContext';
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material'
+import { AuthProvider } from './contexts/AuthContext';
+import ErrorBoundary from './components/ErrorBoundary';
 import Home from './pages/Home';
 import SignUp from './pages/SignUp';
 import Dashboard from './pages/Dashboard';
@@ -54,24 +56,28 @@ const theme = createTheme({
 });
 
 const App = () => {
-  const baseUrl = "/api/v1/";
   const theme = useContext(ThemeContext)
   const darkMode = theme.state.darkMode
+
   return (
-    <ThemeProvider theme={light}>
-      <CssBaseline enableColorScheme />
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/signup" element={<SignUp />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/assets" element={<Assets />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/virtualtrade" element={<VirtualTrade />} />
-      <Route path="/portfolio" element={<Portfolio />} />
-      <Route path="/faq" element={<FAQ />} />
-      <Route path="/resetpassword" element={<ResetPassword />} />
-    </Routes>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <ThemeProvider theme={light}>
+          <CssBaseline enableColorScheme />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/assets" element={<Assets />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/virtualtrade" element={<VirtualTrade />} />
+            <Route path="/portfolio" element={<Portfolio />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/resetpassword" element={<ResetPassword />} />
+          </Routes>
+        </ThemeProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 };
 

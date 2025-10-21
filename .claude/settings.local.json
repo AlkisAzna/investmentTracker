@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git filter-branch --force --index-filter \"git rm --cached --ignore-unmatch .env secrets.env Frontend/my-trading-app/certificates/localhost+2-key.pem Frontend/my-trading-app/certificates/localhost+2.pem\" --prune-empty --tag-name-filter cat -- --all)",
+      "Bash(find . -name \".DS_Store\" -type f -delete)",
+      "Bash(find . -name \"__pycache__\" -type d -exec rm -rf {} +)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
